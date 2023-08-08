@@ -14,10 +14,10 @@ def makedict(x):
     for item in x:
         # Clean up text - remove punctuation, accents, and contractions.
         item = unicodedata.normalize('NFKD', item)
-        item = re.sub('[\'\’\‘]re', '', item)
-        item = re.sub('[\'\’\‘]ll', '', item)
-        item = re.sub('[\'\’\‘]s', '', item)
-        item = re.sub('n[\'\’\‘]t', '', item)
+        item = re.sub('[\'\’\‘\"\“\”]re', '', item)
+        item = re.sub('[\'\’\‘\"\“\”]ll', '', item)
+        item = re.sub('[\'\’\‘\"\“\”]s', '', item)
+        item = re.sub('n[\'\’\‘\"\“\”]t', '', item)
         # A little surprised that splitting on non-word characters decreases the total number of words.  Most must be hyphenated...
         item = re.sub('\W', ' ', item)
         for word in item.lower().split():
@@ -38,7 +38,7 @@ def get_nyt(m_start,y_start,m_end,y_end):
         csv='data/archive_{:4d}_{:02d}.csv'.format(year,month)
 
         if os.path.exists(csv):
-            df=pd.read_csv(csv,index_col=0)
+            df=pd.read_csv(csv,index_col=0,lineterminator='\n')
         else:
             link="https://api.nytimes.com/svc/archive/v1/{:d}/{:d}.json?api-key=".format(year,month)+key_nyt
             r = requests.get(link)

@@ -4,10 +4,11 @@ import numpy as np
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.base import BaseEstimator,TransformerMixin
 from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
 
 from get_stock import get_stock
 from get_nyt import get_nyt
-from plotting_scripts import plot_wc, plot_corr, plot_pearson
+from plotting_scripts import plot_stock_corr
 
 class DictTrim(BaseEstimator,TransformerMixin):
     def __init__(self,wlist):
@@ -20,7 +21,7 @@ class DictTrim(BaseEstimator,TransformerMixin):
 # get the NYT data
 print("Grabbing NYT data...")
 day_data = get_nyt(1, 2022, 7, 2023)
-#day_data = get_nyt(5, 2023, 7, 2023)
+#day_data = get_nyt(4, 2023, 7, 2023)
 
 # get the stock data
 print("Grabbing stock data...")
@@ -29,7 +30,6 @@ stock_data['diff'] = stock_data['4. close'] - stock_data['1. open']
 
 # merge NYT and stock
 day_data = day_data.merge(stock_data['diff'], how='left', left_index=True, right_index=True)
-
 day_data = day_data.dropna(subset=['diff'])
 
 selector = ColumnTransformer([('word_vectorizer',DictVectorizer(sparse=False),'words')])
@@ -37,15 +37,13 @@ selector = ColumnTransformer([('word_vectorizer',DictVectorizer(sparse=False),'w
 v = selector.fit_transform(day_data)
 
 avg_word = v.mean(0)
-var_word = v.var(0)
+var_word = v.var(axis=0,ddof=0)
 
 avg_stock = day_data['diff'].mean()
-var_stock = day_data['diff'].var()
+var_stock = day_data['diff'].var(ddof=0)
 
-print((np.dot(v.T,day_data['diff'])-avg_stock*avg_word)/np.sqrt(var_stock*var_word))
-
-print(np.sort(var_word)[:10])
-
+pearson = (np.dot(v.T,day_data['diff'])/len(v)-avg_stock*avg_word)/np.sqrt(var_stock*var_word)
+plot_stock_corr(pearson)
 '''
 d=Counter()
 for y in day_data['words']:

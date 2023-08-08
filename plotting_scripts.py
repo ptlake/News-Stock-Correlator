@@ -14,7 +14,7 @@ def plot_wc(dl):
     #ax.axis([-1,7,0,225])
     ax.set_axisbelow(True)
     ax.plot(range(len(dl)),dl[ii],linewidth=2,color='black')
-    plt.savefig('NYT_wc.ps')
+    plt.savefig('figs/NYT_wc.ps')
 
 def plot_corr(dl,ii,i):
     plt.rcParams["font.family"] = "Times New Roman"
@@ -28,7 +28,7 @@ def plot_corr(dl,ii,i):
     ax.set_axisbelow(True)
 #    ax.plot(range(len(dl)),[x[ii] for x in dl],linewidth=2,color='black')
     ax.plot(range(len(dl)),dl[ii],linewidth=2,color='black')
-    plt.savefig('NYT_corr_{:02d}.ps'.format(i))
+    plt.savefig('figs/NYT_corr_{:02d}.ps'.format(i))
 
 def plot_pearson(dl,i):
     plt.rcParams["font.family"] = "Times New Roman"
@@ -42,4 +42,18 @@ def plot_pearson(dl,i):
     ax.set_axisbelow(True)
     a=ax.imshow(dl,cmap='seismic',vmin=-1,vmax=1,interpolation='none')
     fig.colorbar(a,ax=ax)
-    plt.savefig('NYT_pearson_{:02d}.ps'.format(i))
+    plt.savefig('figs/NYT_pearson_{:02d}.ps'.format(i))
+
+def plot_stock_corr(y):
+    plt.rcParams["font.family"] = "Times New Roman"
+    fig,ax = plt.subplots(figsize=(6,4))
+    ax.set_title("Pearson correlation with given word")
+    ax.set_ylabel("Pearson Correlation")
+    ax.set_xlabel("Index")
+    ax.grid()
+    #ax.set_xticks(np.arange(-1,8),["0.1","1","10","10$^2$","10$^3$","10$^4$","10$^5$","10$^6$","10$^7$"])
+    ax.axis([0,len(y),-1,1])
+    ax.set_axisbelow(True)
+#    ax.plot(range(len(dl)),[x[ii] for x in dl],linewidth=2,color='black')
+    ax.plot(range(len(y)),y,linewidth=2,color='black')
+    plt.savefig('figs/NYT_stock_corr.ps')
