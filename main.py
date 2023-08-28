@@ -1,14 +1,14 @@
 import pandas as pd
-from collections import Counter
+from   collections import Counter
 import numpy as np
-from sklearn.feature_extraction import DictVectorizer
-from sklearn.base import BaseEstimator,TransformerMixin
-from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import Pipeline
+from   sklearn.feature_extraction import DictVectorizer
+from   sklearn.base import BaseEstimator,TransformerMixin
+from   sklearn.compose import ColumnTransformer
+from   sklearn.pipeline import Pipeline
 
-from get_stock import get_stock
-from get_nyt import get_nyt
-from plotting_scripts import plot_stock_corr
+from   get_stock import get_stock
+from   get_nyt import get_nyt
+from   plotting_scripts import plot_stock_corr
 
 class DictTrim(BaseEstimator,TransformerMixin):
     def __init__(self,wlist):
@@ -20,7 +20,7 @@ class DictTrim(BaseEstimator,TransformerMixin):
 
 # get the NYT data
 print("Grabbing NYT data...")
-day_data = get_nyt(1, 2022, 7, 2023)
+day_data = get_nyt(1, 2021, 7, 2023)
 #day_data = get_nyt(4, 2023, 7, 2023)
 
 # get the stock data
@@ -32,18 +32,46 @@ stock_data['diff'] = stock_data['4. close'] - stock_data['1. open']
 day_data = day_data.merge(stock_data['diff'], how='left', left_index=True, right_index=True)
 day_data = day_data.dropna(subset=['diff'])
 
-selector = ColumnTransformer([('word_vectorizer',DictVectorizer(sparse=False),'words')])
+selector = ColumnTransformer([('word_vectorizer',DictVectorizer(sparse=True),'words')])
 
 v = selector.fit_transform(day_data)
+
+infrequent = []
+for a,n in Counter(v.nonzero()[1]).items():
+    if n < 3:
+        infrequent.append(a)
+
+v = np.array(v.todense())
+v = np.delete(v,infrequent,axis = 1)
+
+features = selector.named_transformers_['word_vectorizer'].feature_names_
+
+
+for i in sorted(infrequent,reverse=True):
+    del features[i]
 
 avg_word = v.mean(0)
 var_word = v.var(axis=0,ddof=0)
 
-avg_stock = day_data['diff'].mean()
-var_stock = day_data['diff'].var(ddof=0)
-
+'''
+avg_stock = (day_data['diff']**2).mean()
+var_stock = (day_data['diff']**2).var(ddof=0)
+pearson = (np.dot(v.T,day_data['diff']**2)/len(v)-avg_stock*avg_word)/np.sqrt(var_stock*var_word)
+'''
+avg_stock = (day_data['diff']).mean()
+var_stock = (day_data['diff']).var(ddof=0)
 pearson = (np.dot(v.T,day_data['diff'])/len(v)-avg_stock*avg_word)/np.sqrt(var_stock*var_word)
-plot_stock_corr(pearson)
+
+
+plot_stock_corr(sorted(pearson))
+ind = np.argpartition(pearson, -100)[-100:]
+ind = ind[np.argsort(pearson[ind])]
+
+for i in ind:
+    x = features[i]
+    y = pearson[i]
+    print(y,x)
+
 '''
 d=Counter()
 for y in day_data['words']:
