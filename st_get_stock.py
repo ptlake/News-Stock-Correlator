@@ -1,8 +1,6 @@
-import os
 import requests
 import urllib
 
-from   dotenv import load_dotenv
 import pandas as pd
 import streamlit as st
 
@@ -17,7 +15,7 @@ def get_stock(stock):
             params={
                 'function':'TIME_SERIES_DAILY',
                 'symbol': stock,
-                'apikey': os.getenv("ALV_KEY"),
+                'apikey': st.secrets["ALV_KEY"],
                 'outputsize':'full'
             })
     if r.status_code != 200:

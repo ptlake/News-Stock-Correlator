@@ -1,7 +1,6 @@
 import unicodedata
 import re
 
-from   dotenv import load_dotenv
 import pandas as pd
 
 def makedict(x):

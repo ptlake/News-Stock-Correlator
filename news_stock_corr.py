@@ -1,8 +1,6 @@
 from   collections import Counter
 from   datetime import datetime, timedelta
-import os
 
-from   dotenv import load_dotenv
 import numpy as np
 import pandas as pd
 import pymongo
@@ -19,8 +17,7 @@ import st_plotting_scripts
 @st.cache_data
 def init_nyt():
     # get the NYT data
-    load_dotenv()
-    mongo_link = f"mongodb+srv://{os.getenv('MONGODB_USER')}:{os.getenv('MONGODB_USER_PASSWORD')}@{os.getenv('MONGODB_CLUSTER')}?retryWrites=true&w=majority"
+    mongo_link = f"mongodb+srv://{st.secrets['MONGODB_USER']}:{st.secrets['MONGODB_USER_PASSWORD']}@{st.secrets['MONGODB_CLUSTER']}?retryWrites=true&w=majority"
     mongodb = pymongo.MongoClient(mongo_link)
     db = mongodb['nyt_article_summaries']
     mongo_collection = db['articles']
