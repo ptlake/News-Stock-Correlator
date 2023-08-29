@@ -9,7 +9,6 @@ def get_stock(stock):
     '''
     Pass in the string `stock` and return the complete history of the stock.
     '''
-    load_dotenv()
     url = 'https://www.alphavantage.co/query'
     r = requests.get(url,
             params={
