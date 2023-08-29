@@ -1,10 +1,8 @@
-from dotenv import load_dotenv
 import unicodedata
-import os
 import re
-import requests
+
+from   dotenv import load_dotenv
 import pandas as pd
-import time
 
 def makedict(x):
     '''
@@ -25,29 +23,19 @@ def makedict(x):
     return d
 
 
-def get_nyt(m_start,y_start,m_end,y_end):
+
+
+def get_nyt(mongo_collection,m_start,y_start,m_end,y_end):
     '''
     Returns a DataFrame containing a word count dictionary for each day from the NYT data from m_start-y_start (inclusive) to m_end-y_end (exclusive).  If the file is stored locally - it is use.  Otherwise, it is downloaded and saved.
     '''
-    load_dotenv()
-    key_nyt=os.getenv("NYT_KEY")
     day_data=pd.DataFrame()
     year = y_start
     month = m_start
     while year != y_end or month != m_end:
-        csv='data/archive_{:4d}_{:02d}.csv'.format(year,month)
-
-        if os.path.exists(csv):
-            df=pd.read_csv(csv,index_col=0,lineterminator='\n')
-        else:
-            link="https://api.nytimes.com/svc/archive/v1/{:d}/{:d}.json?api-key=".format(year,month)+key_nyt
-            r = requests.get(link)
-            if r.status_code != 200:
-                raise ValueError("Problem accessing NYT\nSTATUS CODE:  {:d}".format(r.status_code))
-            r = r.json()['response']['docs']
-            df=pd.DataFrame(pd.json_normalize(r))
-            df.to_csv(csv)
-            time.sleep(12) # as suggested/required in the API documentation
+        date_str = f"{year}_{month:02d}"
+        response = mongo_collection.find_one({'month':date_str})
+        df = pd.DataFrame.from_dict(response['articles'])
 
         #convert pub_date to datetime
         df = df.dropna(subset=['pub_date'])

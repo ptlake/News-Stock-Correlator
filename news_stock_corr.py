@@ -1,23 +1,31 @@
 from   collections import Counter
 from   datetime import datetime, timedelta
+import os
 
+from   dotenv import load_dotenv
 import numpy as np
 import pandas as pd
+import pymongo
 from   sklearn.base import BaseEstimator,TransformerMixin
 from   sklearn.compose import ColumnTransformer
 from   sklearn.feature_extraction import DictVectorizer
 from   sklearn.pipeline import Pipeline
 import streamlit as st
 
-from   get_nyt import get_nyt
-from   get_stock import get_stock
+from   st_get_nyt import get_nyt
+from   st_get_stock import get_stock
 import st_plotting_scripts
 
 @st.cache_data
 def init_nyt():
     # get the NYT data
+    load_dotenv()
+    mongo_link = f"mongodb+srv://{os.getenv('MONGODB_USER')}:{os.getenv('MONGODB_USER_PASSWORD')}@{os.getenv('MONGODB_CLUSTER')}?retryWrites=true&w=majority"
+    mongodb = pymongo.MongoClient(mongo_link)
+    db = mongodb['nyt_article_summaries']
+    mongo_collection = db['articles']
     print("Grabbing NYT data...")
-    day_data = get_nyt(1, 2020, 7, 2023)
+    day_data = get_nyt(mongo_collection,1, 2018, 7, 2023)
     return day_data
 
 @st.cache_data
@@ -31,7 +39,7 @@ def get_stock_names():
 
 @st.cache_data
 def get_dates():
-    min_date = datetime(2020,1,1)
+    min_date = datetime(2018,1,1)
     max_date = datetime.now()
     return min_date, max_date
 
