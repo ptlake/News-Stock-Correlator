@@ -4,10 +4,11 @@ from   datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
 import pymongo
-from   sklearn.base import BaseEstimator,TransformerMixin
-from   sklearn.compose import ColumnTransformer
-from   sklearn.feature_extraction import DictVectorizer
-from   sklearn.pipeline import Pipeline
+#from   sklearn.base import BaseEstimator,TransformerMixin
+#from   sklearn.compose import ColumnTransformer
+#from   sklearn.feature_extraction import DictVectorizer
+#from   sklearn.pipeline import Pipeline
+from   sklearn.feature_extraction.text import CountVectorizer
 import streamlit as st
 
 from   st_get_nyt import get_nyt
@@ -90,27 +91,35 @@ with st.form("selections"):
                            right_index=True)
                 )
 
-            selector = ColumnTransformer([
-                ('word_vectorizer',
-                 DictVectorizer(sparse=True),
-                 'words')
-                 ])
+            vectorizer = CountVectorizer(min_df=word_freq)
 
-            v = selector.fit_transform(stock_day_data)
+            v = vectorizer.fit_transform(stock_day_data['words'])
 
-            infrequent = []
-            for a,n in Counter(v.nonzero()[1]).items():
-                if n < word_freq:
-                    infrequent.append(a)
+            
+            #selector = ColumnTransformer([
+            #    ('word_vectorizer',
+            #     DictVectorizer(sparse=True),
+            #     'words')
+            #     ])
 
+            #v = selector.fit_transform(stock_day_data)
+
+            #infrequent = []
+            #for a,n in Counter(v.nonzero()[1]).items():
+            #    if n < word_freq:
+            #        infrequent.append(a)
+
+            #v = np.array(v.todense())
+            #v = np.delete(v,infrequent,axis = 1)
+
+            #features = selector.named_transformers_['word_vectorizer'].feature_names_
+
+
+            #for i in sorted(infrequent,reverse=True):
+            #    del features[i]
+
+            features = vectorizer.get_feature_names_out()
             v = np.array(v.todense())
-            v = np.delete(v,infrequent,axis = 1)
-
-            features = selector.named_transformers_['word_vectorizer'].feature_names_
-
-
-            for i in sorted(infrequent,reverse=True):
-                del features[i]
 
             avg_word = v.mean(0)
             var_word = v.var(axis=0,ddof=0)

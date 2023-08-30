@@ -22,7 +22,17 @@ def makedict(x):
     return d
 
 
-
+def clean_string(x):
+    """Cleans up strings to be analyzed.
+    """
+    x = unicodedata.normalize('NFKD', x)
+    x = re.sub('[\'\’\‘\"\“\”]re', '', x)
+    x = re.sub('[\'\’\‘\"\“\”]ll', '', x)
+    x = re.sub('[\'\’\‘\"\“\”]s', '', x)
+    x = re.sub('n[\'\’\‘\"\“\”]t', '', x)
+    # A little surprised that splitting on non-word characters decreases the total number of words.  Most must be hyphenated...
+    x = re.sub('\W', ' ', x)
+    return x
 
 def get_nyt(mongo_collection,m_start,y_start,m_end,y_end):
     '''
@@ -40,9 +50,12 @@ def get_nyt(mongo_collection,m_start,y_start,m_end,y_end):
         df = df.dropna(subset=['pub_date'])
         df['pub_date'] = pd.to_datetime(df['pub_date'],format='mixed')
 
-        df['words'] = df.apply(lambda x:str(x['abstract'])+' '+str(x['lead_paragraph'])+' '+str(x['headline.main']),axis=1)
+        #df['words'] = df.apply(lambda x:str(x['abstract'])+' '+str(x['lead_paragraph'])+' '+str(x['headline.main']),axis=1)
+        #day_data = day_data._append(df.groupby(df['pub_date'].dt.date)[['words']].agg(makedict))
 
-        day_data = day_data._append(df.groupby(df['pub_date'].dt.date)[['words']].agg(makedict))
+        df['words'] = df.apply(lambda x:clean_string(f"{x['abstract']} {x['lead_paragraph']} {x['headline.main']} "),axis=1)
+
+        day_data = day_data._append(df.groupby(df['pub_date'].dt.date)[['words']].agg(sum))
 
         month += 1
         if month == 13:
