@@ -1,5 +1,5 @@
 from   collections import Counter
-from   datetime import datetime, timedelta
+from   datetime import datetime, timedelta,date
 
 import numpy as np
 import pandas as pd
@@ -23,7 +23,7 @@ def init_nyt():
     db = mongodb['nyt_article_summaries']
     mongo_collection = db['articles']
     #print("Grabbing NYT data...")
-    day_data = get_nyt(mongo_collection,1, 2018, 7, 2023)
+    day_data = get_nyt(mongo_collection,1, 2018, 8, 2023)
     return day_data
 
 @st.cache_data
@@ -65,27 +65,33 @@ with st.form("selections"):
         )
         word_freq = st.slider(
             'Minumum Word Frequency',
-            min_value=0,
+            min_value=5,
             max_value=100,
             step=1
         )
         submitted = st.form_submit_button("Calculate")
 
-    if submitted:
+    if not submitted:
+        st.write("Enter a query in the sidebar")
+    else:
         stock_name = stock_names['symbol-name'][stock_index]
         st.write(f"Stock:  {stock_name}")
         st.write(f"Date Range:\
                   {month_range[0].strftime('%m/%Y')}\
                   - {month_range[1].strftime('%m/%Y')}")
         st.write(f"Minimum Word Frequency: {word_freq}")
+        st.markdown("""---""")
+
         ticker = stock_names.iloc[stock_index]
         if pd.notnull(ticker['symbol']):
             stock_data = get_stock(ticker['symbol'])
             stock_data['diff'] = stock_data['4. close'] - stock_data['1. open']
 
+            month_range = [x.replace(day=1).date() for x in month_range]
+
             stock_day_data = (
-                day_data
-                    .merge(stock_data['diff'], 
+                day_data.loc[month_range[0]:month_range[1]]
+                    .merge(stock_data, 
                            how='inner',
                            left_index=True,
                            right_index=True)
@@ -94,32 +100,8 @@ with st.form("selections"):
             vectorizer = CountVectorizer(min_df=word_freq)
 
             v = vectorizer.fit_transform(stock_day_data['words'])
-
-            
-            #selector = ColumnTransformer([
-            #    ('word_vectorizer',
-            #     DictVectorizer(sparse=True),
-            #     'words')
-            #     ])
-
-            #v = selector.fit_transform(stock_day_data)
-
-            #infrequent = []
-            #for a,n in Counter(v.nonzero()[1]).items():
-            #    if n < word_freq:
-            #        infrequent.append(a)
-
-            #v = np.array(v.todense())
-            #v = np.delete(v,infrequent,axis = 1)
-
-            #features = selector.named_transformers_['word_vectorizer'].feature_names_
-
-
-            #for i in sorted(infrequent,reverse=True):
-            #    del features[i]
-
-            features = vectorizer.get_feature_names_out()
             v = np.array(v.todense())
+            features = vectorizer.get_feature_names_out()
 
             avg_word = v.mean(0)
             var_word = v.var(axis=0,ddof=0)
@@ -134,11 +116,18 @@ with st.form("selections"):
             ind = ind[np.argsort(pearson[ind])]
             negative_weights = {features[i]:-pearson[i] for i in ind}
 
+            st.write('Stock History')
             col1, col2 = st.columns(2)
             with col1:
-                st_plotting_scripts.plot_stock(stock_data,month_range)
+                st_plotting_scripts.plot_stock(stock_day_data,month_range)
             with col2:
+                st_plotting_scripts.plot_stock_diff(stock_day_data,month_range)
+            st.write('Word Correlation Plots')
+            col1, col2 = st.columns(2)
+            with col1:
                 st_plotting_scripts.plot_stock_corr(sorted(pearson))
+            with col2:
+                st_plotting_scripts.plot_stock_corr_hist(pearson)
             col1, col2 = st.columns(2)
             with col1:
                 st.write('Positive Correlators')
@@ -146,7 +135,4 @@ with st.form("selections"):
             with col2:
                 st.write('Negative Correlators')
                 st_plotting_scripts.negative_words(negative_weights)
-        
-    else:
-        st.write("Enter a query in the sidebar")
 
