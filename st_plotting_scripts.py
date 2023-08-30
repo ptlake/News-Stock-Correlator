@@ -1,5 +1,3 @@
-from   io import BytesIO
-
 import matplotlib.pyplot as plt
 import numpy as np
 import streamlit as st
@@ -18,9 +16,6 @@ def plot_stock_corr(y):
     ax.set_axisbelow(True)
     ax.plot(range(len(y)),y,linewidth=2,color='black')
     st.pyplot(fig)
-    #buf = BytesIO()
-    #fig.savefig(buf, format="png")
-    #st.image(buf)
 
 def plot_stock(y,month_range):
     plt.rcParams["font.family"] = "Times New Roman"
@@ -34,9 +29,6 @@ def plot_stock(y,month_range):
     ax.set_axisbelow(True)
     ax.plot(y.index,y['diff'],linewidth=2,color='black')
     st.pyplot(fig)
-    #buf = BytesIO()
-    #fig.savefig(buf, format="png")
-    #st.image(buf)
 
 def positive_words(words):
     wordcloud = WordCloud(colormap='Blues').generate_from_frequencies(words)

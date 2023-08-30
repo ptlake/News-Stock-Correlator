@@ -4,3 +4,4 @@ figs
 data
 dev
 .ipynb_checkpoints
+.streamlit

@@ -21,7 +21,7 @@ def init_nyt():
     mongodb = pymongo.MongoClient(mongo_link)
     db = mongodb['nyt_article_summaries']
     mongo_collection = db['articles']
-    print("Grabbing NYT data...")
+    #print("Grabbing NYT data...")
     day_data = get_nyt(mongo_collection,1, 2018, 7, 2023)
     return day_data
 
@@ -31,7 +31,6 @@ def get_stock_names():
     listings['symbol-name'] = listings['symbol'] + ' - ' +  listings['name']
     placeholder=pd.DataFrame({'symbol-name':'<select stock ticker>'}, index=[0])
     listings = pd.concat([placeholder,listings]).reset_index(drop=True)
-    print(listings.head())
     return listings
 
 @st.cache_data
@@ -125,8 +124,6 @@ with st.form("selections"):
             ind = np.argpartition(pearson, 100)[:100]
             ind = ind[np.argsort(pearson[ind])]
             negative_weights = {features[i]:-pearson[i] for i in ind}
-
-            print(positive_weights)
 
             col1, col2 = st.columns(2)
             with col1:
