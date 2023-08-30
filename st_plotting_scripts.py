@@ -7,7 +7,7 @@ from wordcloud import WordCloud
 def plot_stock_corr(y):
     # plt.rcParams["font.family"] = "Times New Roman"
     fig, ax = plt.subplots(figsize=(6, 4))
-    ax.set_title("Pearson correlation with each word, increasing")
+    ax.set_title("Pearson correlation with each word")
     ax.set_ylabel("Pearson Correlation")
     ax.set_xlabel("Ordered Ranking")
     ax.grid()
