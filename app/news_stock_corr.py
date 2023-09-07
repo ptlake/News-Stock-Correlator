@@ -26,7 +26,7 @@ def init_nyt():
 
 @st.cache_data
 def get_stock_names():
-    listings = pd.read_csv("listing_status.csv")
+    listings = pd.read_csv("../data/listing_status.csv")
     listings["symbol-name"] = listings["symbol"] + " - " + listings["name"]
     placeholder = pd.DataFrame({"symbol-name": "<select stock ticker>"}, index=[0])
     listings = pd.concat([placeholder, listings]).reset_index(drop=True)

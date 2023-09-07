@@ -27,7 +27,7 @@ while year != y_end or month != m_end:
     date_str = f"{year}_{month:02d}"
     print(date_str)
     # First - save full data from NYT locally
-    csv = "data/archive_{:4d}_{:02d}.csv".format(year, month)
+    csv = "../data/archive_{:4d}_{:02d}.csv".format(year, month)
     if os.path.exists(csv):
         print("  Data already downloaded.")
         df = pd.read_csv(csv, index_col=0, lineterminator="\n")
